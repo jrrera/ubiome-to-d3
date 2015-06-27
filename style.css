@@ -1,0 +1,33 @@
+/* Styles go here */
+
+.node circle {
+  cursor: pointer;
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font-size: 11px;
+}
+
+path.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+
+#outer {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+#inner {
+    width: 3000px;
+    height: 4000px;
+}
+svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
