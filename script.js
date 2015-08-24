@@ -20,10 +20,7 @@ function load(dataLocation, elementId) {
 
   // Height of 2.5x allows you to zoom around with less cramping.
   tree = d3.layout.tree()
-      .size([h * 2.5, w]).
-      separation(function separation(a, b) {
-        return a.parent == b.parent ? 1 : 2;
-      });
+      .size([h * 2.5, w]);
 
   diagonal = d3.svg.diagonal()
       .projection(function(d) { return [d.y, d.x]; });
@@ -48,7 +45,7 @@ function load(dataLocation, elementId) {
   // Set up zoom behavior.
   d3.select("svg")
       .call(d3.behavior.zoom()
-          .scaleExtent([0.5, 5])
+          .scaleExtent([0.1, 5])
           .on("zoom", zoom));
 }
 
@@ -66,7 +63,7 @@ function update(source) {
   var nodes = tree.nodes(root).reverse();
 
   // Normalize for fixed-depth.
-  nodes.forEach(function(d) { d.y = d.depth * 180; });
+  nodes.forEach(function(d) { d.y = d.depth * 240; });
 
   // Update the nodes
   var node = vis.selectAll("g.node")
@@ -84,10 +81,7 @@ function update(source) {
 
   nodeEnter.append("svg:text")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-      .attr("y", function(d) {
-        // Spread out the labels a bit by adjusting by odds and evens.
-        return d.taxon % 2 === 0 && (d.children || d.children_) ? 5 : -5;
-      })
+      .attr("y", -3)
       .attr("dy", ".35em")
       .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
       .text(function(d) { return d.label; })
