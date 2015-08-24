@@ -1,45 +1,68 @@
 (function () {
 
+var realWidth = window.innerWidth;
+var realHeight = window.innerHeight;
 var m, w, h, i, root, tree, diagonal, vis;
 
-function load(location, elementId) {
-  m = [1060, 120, 60, 120];
-  w = 3000 - m[1] - m[3];
-  h = 4000 - m[0] - m[2];
+window.addEventListener('resize', resize);
+
+/**
+ * Exposed method for setting up the graph. 
+ *
+ * @param {string} dataLocation Where to make the HTTP request for JSON.
+ * @param {string} elementId The div to build on (e.g. '#inner').
+ */
+function load(dataLocation, elementId) {
+  margins = [60, 60, 60, 60];
+  w = realWidth - margins[1] - margins[3];
+  h = realHeight - margins[0] - margins[2];
   i = 0;
 
+  // Height of 2.5x allows you to zoom around with less cramping.
   tree = d3.layout.tree()
-      .nodeSize([15, 10]);
+      .size([h * 2.5, w]).
+      separation(function separation(a, b) {
+        return a.parent == b.parent ? 1 : 2;
+      });
 
   diagonal = d3.svg.diagonal()
       .projection(function(d) { return [d.y, d.x]; });
 
   vis = d3.select(elementId).append("svg:svg")
-      .attr("width", w + m[1] + m[3])
-      .attr("height", h + m[0] + m[2])
+      .attr("viewBox", "0 0 " + w + " " + h)
+      .attr("preserveAspectRatio", "xMidYMid meet")
+      .attr("class","svg_container")
+      .style("overflow", "scroll")
     .append("svg:g")
-      .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+       .attr("class","drawarea")
+    .append("svg:g")
+      .attr("transform", "translate(" + margins[3] + "," + margins[0] + ")");
 
-  d3.json(location, function(json) {
+  d3.json(dataLocation, function(json) {
     root = processMicrobiome(json);
     root.x0 = h / 2;
     root.y0 = 0;
-
-    function toggleAll(d) {
-      if (d.children) {
-        d.children.forEach(toggleAll);
-        toggle(d);
-      }
-    }
-
     update(root);
   });
+
+  // Set up zoom behavior.
+  d3.select("svg")
+      .call(d3.behavior.zoom()
+          .scaleExtent([0.5, 5])
+          .on("zoom", zoom));
 }
 
+
+/**
+ * Updates the graph in response to data or events
+ *
+ * @param {Object} source Data structure for graph to work with. Can be the
+ *     root or any node with children.
+ */
 function update(source) {
   var duration = d3.event && d3.event.altKey ? 5000 : 500;
 
-  // Compute the new tree layout.
+  // Compute the new tree layout. Null children prop yields leaf nodes.
   var nodes = tree.nodes(root).reverse();
 
   // Normalize for fixed-depth.
@@ -62,9 +85,8 @@ function update(source) {
   nodeEnter.append("svg:text")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
       .attr("y", function(d) {
-        // Helps spread out the labels a bit.
+        // Spread out the labels a bit by adjusting by odds and evens.
         return d.taxon % 2 === 0 && (d.children || d.children_) ? 5 : -5;
-        // return (d.children && d.children.length > 1) || (d._children && d._children.length > 1) ? 10 : -5; 
       })
       .attr("dy", ".35em")
       .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
@@ -132,7 +154,11 @@ function update(source) {
 }
 
 
-// Toggle children.
+/**
+ * Toggles children on and off in the graph.
+ * 
+ * @param {Object} d Node data.
+ */
 function toggle(d) {
   if (d.children) {
     d._children = d.children;
@@ -143,7 +169,26 @@ function toggle(d) {
   }
 }
 
-// Traverse uBiome JSON data; convert into nested data structure.
+
+/**
+ * Toggles entire graph starting from passed into root.
+ * 
+ * @param {Object} d Node data.
+ */
+function toggleAll(d) {
+  if (d.children) {
+    d.children.forEach(toggleAll);
+    toggle(d);
+  }
+}
+
+
+/**
+ * Traverse uBiome JSON data; convert into nested data structure.
+ * 
+ * @param {Object} data The parsed uBiome data export.
+ * @return {Object} root The nested data structure for D3 to use.
+ */
 function processMicrobiome(data) {
  var referenceDict = {}; // Store entries as key value pairs
  var microbiomeArr = data.ubiome_bacteriacounts; // Shorthand var.
@@ -151,24 +196,20 @@ function processMicrobiome(data) {
  var totalCount;
  
  // Add each node to the dict using taxon ID as key
- microbiomeArr.forEach(function(species, i, arr) {
+ microbiomeArr.forEach(function(species) {
    referenceDict[species.taxon] = species;
  });
- 
- // Grab reference to root element
- console.log(referenceDict);
+
  root = referenceDict[1];
  totalCount = root.count;
  
  // Put each element in its place by parent and add ratio to total property
- microbiomeArr.forEach(function(species, i, arr) {
+ microbiomeArr.forEach(function(species) {
    var parentId = species.parent;
    var parent = referenceDict[parentId];
    
    if (parent) {
-     if (!parent.children) {
-       parent.children = [];
-     }
+     parent.children = parent.children || [];
      parent.children.push(species);
    }
    
@@ -177,10 +218,31 @@ function processMicrobiome(data) {
    
  });
  
- // Count totals only for leaf elements. Since 
- 
  return root;
 }
+
+
+/**
+ * Responds to window resizing.
+ */
+function resize() {
+  var svg = d3.select("svg:svg"),
+      width = window.innerWidth,
+      height = window.innerHeight;
+
+  svg.attr("viewBox", "0 0 " + width + " " + height);
+}
+
+
+/**
+ * Translate draw area based on zoom events.
+ */
+function zoom() {
+  d3.select(".drawarea")
+      .attr("transform", "translate(" + d3.event.translate + ")" +
+            " scale(" + d3.event.scale + ")");
+}
+
 
 // CommonJS support
 if (typeof exports !== 'undefined') {
@@ -189,7 +251,7 @@ if (typeof exports !== 'undefined') {
   }
   exports.load = load;
 } else {
-  window.ubiomed3 = load;
+  window.ubiometree = load;
 }
 
 

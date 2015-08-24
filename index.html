@@ -1,19 +1,21 @@
 <!DOCTYPE html>
+<meta charset="utf-8" />
 <html>
 
   <head>
-    <script data-require="d3@*" data-semver="3.5.3" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.js"></script>
     <link rel="stylesheet" href="style.css" />
     
   </head>
 
   <body>
+    <h1> uBiome Data to D3 Tree Graph</h1>
     <div id="outer">
       <div id="inner"></div>
     </div>
     <script src="script.js"></script>
     <script>
-      ubiomed3('microbiome.json', '#inner');
+      ubiometree('microbiome.json', '#inner');
     </script>
   </body>
 

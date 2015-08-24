@@ -23,8 +23,8 @@ path.link {
     overflow: auto;
 }
 #inner {
-    width: 3000px;
-    height: 4000px;
+    width: 100%;
+    height: 100%;
 }
 svg {
     display: block;
