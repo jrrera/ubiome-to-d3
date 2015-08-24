@@ -1,35 +1,40 @@
-var m = [1060, 120, 60, 120],
-    w = 3000 - m[1] - m[3],
-    h = 4000 - m[0] - m[2],
-    i = 0,
-    root;
+(function () {
 
-var tree = d3.layout.tree()
-    .nodeSize([15, 10]);
+var m, w, h, i, root, tree, diagonal, vis;
 
-var diagonal = d3.svg.diagonal()
-    .projection(function(d) { return [d.y, d.x]; });
+function load(location, elementId) {
+  m = [1060, 120, 60, 120];
+  w = 3000 - m[1] - m[3];
+  h = 4000 - m[0] - m[2];
+  i = 0;
 
-var vis = d3.select("#inner").append("svg:svg")
-    .attr("width", w + m[1] + m[3])
-    .attr("height", h + m[0] + m[2])
-  .append("svg:g")
-    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+  tree = d3.layout.tree()
+      .nodeSize([15, 10]);
 
-d3.json("microbiome.json", function(json) {
-  root = processMicrobiome(json);
-  root.x0 = h / 2;
-  root.y0 = 0;
+  diagonal = d3.svg.diagonal()
+      .projection(function(d) { return [d.y, d.x]; });
 
-  function toggleAll(d) {
-    if (d.children) {
-      d.children.forEach(toggleAll);
-      toggle(d);
+  vis = d3.select(elementId).append("svg:svg")
+      .attr("width", w + m[1] + m[3])
+      .attr("height", h + m[0] + m[2])
+    .append("svg:g")
+      .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+  d3.json(location, function(json) {
+    root = processMicrobiome(json);
+    root.x0 = h / 2;
+    root.y0 = 0;
+
+    function toggleAll(d) {
+      if (d.children) {
+        d.children.forEach(toggleAll);
+        toggle(d);
+      }
     }
-  }
 
-  update(root);
-});
+    update(root);
+  });
+}
 
 function update(source) {
   var duration = d3.event && d3.event.altKey ? 5000 : 500;
@@ -40,7 +45,7 @@ function update(source) {
   // Normalize for fixed-depth.
   nodes.forEach(function(d) { d.y = d.depth * 180; });
 
-  // Update the nodes…
+  // Update the nodes
   var node = vis.selectAll("g.node")
       .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
@@ -56,7 +61,7 @@ function update(source) {
 
   nodeEnter.append("svg:text")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-      .attr("y", function(d) { 
+      .attr("y", function(d) {
         // Helps spread out the labels a bit.
         return d.taxon % 2 === 0 && (d.children || d.children_) ? 5 : -5;
         // return (d.children && d.children.length > 1) || (d._children && d._children.length > 1) ? 10 : -5; 
@@ -90,7 +95,7 @@ function update(source) {
   nodeExit.select("text")
       .style("fill-opacity", 1e-6);
 
-  // Update the links…
+  // Update the links
   var link = vis.selectAll("path.link")
       .data(tree.links(nodes), function(d) { return d.target.id; });
 
@@ -164,7 +169,7 @@ function processMicrobiome(data) {
      if (!parent.children) {
        parent.children = [];
      }
-     parent.children.push(species);  
+     parent.children.push(species);
    }
    
    species.percentOfTotal = (species.count / totalCount) * 100;
@@ -176,3 +181,16 @@ function processMicrobiome(data) {
  
  return root;
 }
+
+// CommonJS support
+if (typeof exports !== 'undefined') {
+  if (typeof module !== 'undefined' && module.exports) {
+    exports = module.exports = load;
+  }
+  exports.load = load;
+} else {
+  window.ubiomed3 = load;
+}
+
+
+})(); // IIFE
