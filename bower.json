@@ -1,0 +1,22 @@
+{
+  "name": "ubiome-to-d3",
+  "version": "0.1.0",
+  "homepage": "https://github.com/jrrera/ubiome-to-d3",
+  "authors": [
+    "jrrera <jrrera@gmail.com>"
+  ],
+  "moduleType": [
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "~3.5.6"
+  }
+}

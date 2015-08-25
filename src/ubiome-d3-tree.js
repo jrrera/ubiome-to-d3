@@ -66,18 +66,21 @@ function update(source) {
   nodes.forEach(function(d) { d.y = d.depth * 240; });
 
   // Update the nodes
-  var node = vis.selectAll("g.node")
+  var node = vis.selectAll("g.ubiome-node")
       .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
   // Enter any new nodes at the parent's previous position.
   var nodeEnter = node.enter().append("svg:g")
-      .attr("class", "node")
+      .attr("class", "ubiome-node")
       .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
       .on("click", function(d) { toggle(d); update(d); });
 
   nodeEnter.append("svg:circle")
       .attr("r", 1e-6)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; })
+      .style("cursor", 'pointer')
+      .style("stroke", 'steelblue')
+      .style("stroke-width", '1.5px');
 
   nodeEnter.append("svg:text")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
@@ -85,7 +88,8 @@ function update(source) {
       .attr("dy", ".35em")
       .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
       .text(function(d) { return d.label; })
-      .style("fill-opacity", 1e-6);
+      .style("fill-opacity", 1e-6)
+      .style("font-size", "11px");
 
   // Transition nodes to their new position.
   var nodeUpdate = node.transition()
@@ -112,12 +116,15 @@ function update(source) {
       .style("fill-opacity", 1e-6);
 
   // Update the links
-  var link = vis.selectAll("path.link")
+  var link = vis.selectAll("path.ubiome-link")
       .data(tree.links(nodes), function(d) { return d.target.id; });
 
   // Enter any new links at the parent's previous position.
   link.enter().insert("svg:path", "g")
-      .attr("class", "link")
+      .attr("class", "ubiome-link")
+      .style('fill', 'none')
+      .style('stroke', '#ccc')
+      .style('stroke-width', '1.5px')
       .attr("d", function(d) {
         var o = {x: source.x0, y: source.y0};
         return diagonal({source: o, target: o});
@@ -220,7 +227,7 @@ function processMicrobiome(data) {
  * Responds to window resizing.
  */
 function resize() {
-  var svg = d3.select("svg:svg"),
+  var svg = d3.select("svg"),
       width = window.innerWidth,
       height = window.innerHeight;
 

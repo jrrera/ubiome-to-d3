@@ -1,3 +1,13 @@
-A quick and dirty example of converting uBiome's JSON data export into a 
-user friendly graph for those who prefer different types of visualizations on
-top of what uBiome offers. 
+A small utility for converting uBiome's JSON data export into a 
+user friendly tree graph.
+
+Usage: 
+
+    var ubiometree = require('ubiome-d3-tree.js');
+    ubiometree('microbiome.json', '#inner'); 
+
+
+To view an example, first run `bower install`, fire up a local server 
+(e.g. `python -m SimpleHTTPServer 8081`) and open `example/index.html`.
+
+Questions? Issues? Let me know!

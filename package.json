@@ -1,0 +1,19 @@
+{
+  "name": "ubiome-to-d3",
+  "version": "0.1.0",
+  "description": "Uses D3 to process uBiome's JSON export and represent it in a tree visualization. ",
+  "main": "src/ubiome-d3-tree.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrrera/ubiome-to-d3.git"
+  },
+  "author": "Jon Guerrera <jrrera@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jrrera/ubiome-to-d3/issues"
+  },
+  "homepage": "https://github.com/jrrera/ubiome-to-d3"
+}
